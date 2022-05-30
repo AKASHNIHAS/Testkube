@@ -1,20 +1,13 @@
 import http from 'k6/http';
-import { sleep, check } from 'k6';
 
-export let options = {
-  insecureSkipTLSVerify: true,
+export const options = {
   thresholds: {
-      'http_req_duration{kind:html}': ['avg<=250', 'p(95)<500'],
-      'checks{kind:http}': ['rate>0.95'],     // example for tag specific checks
-      checks: ['rate>0.95'],                  // example for overall checks
+    http_req_failed: ['rate<0.01'], // http errors should be less than 1%
+    http_req_duration: ['p(95)<200'], // 95% of requests should be below 200ms
   },
 };
 
 export default function () {
-  check(http.get('https://kubeshop.github.io/testkube/', {
-      tags: {kind: 'html'},
-  }), {
-      "status is 404": (res) => res.status === 404,
-  }, {kind: 'http'},
-  );
-  sleep(1);
+  http.get('https://test-api.k6.io/public/crocodiles/1/');
+}
+
